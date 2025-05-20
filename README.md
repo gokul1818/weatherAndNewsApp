@@ -18,11 +18,11 @@ A React Native application that shows weather forecasts and news headlines based
 
 Here are some screenshots demonstrating the app UI:
 
-| Home Screen          | Weather Forecast       | News Headlines        |
-|----------------------|-----------------------|----------------------|
-| ![Home Screen](./screenshots/homepage.png) | ![Forecast](./screenshots/home1.png) | ![News](./screenshots/news.png) | ![setting](./screenshots/setting.png) | ![search](./screenshots/search.png) |
+| Home Screen          | Weather Forecast       | News Headlines        | Settings Screen       | Search Screen         |
+|----------------------|------------------------|------------------------|------------------------|------------------------|
+| ![Home Screen](./screenshots/homepage.png) | ![Forecast](./screenshots/home1.png) | ![News](./screenshots/news.png) | ![Setting](./screenshots/setting.png) | ![Search](./screenshots/search.png) |
 
-> **Note:** Replace these images with your actual screenshots in the `screenshots/` folder.
+> **Note:** Make sure your screenshots are placed in the `screenshots/` folder at the root level.
 
 ---
 
