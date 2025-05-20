@@ -23,8 +23,11 @@ import {getNewsByCategory} from '../../services/newsServics';
 import {setNews, setNewsError} from '../../redux/newsAction';
 import Geolocation from 'react-native-geolocation-service';
 import {PermissionsAndroid, Platform} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 export const Dashboard = () => {
+  const navigation = useNavigation();
+
   const [city, setCity] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [newsLoading, setNewsLoading] = useState<boolean>(false);
@@ -32,10 +35,11 @@ export const Dashboard = () => {
   const dispatch = useDispatch();
 
   const weatherData = useSelector((state: any) => state.weather.weather);
-  console.log('🚀 ~ Dashboard ~ weatherData:', weatherData);
-  const error = useSelector((state: any) => state.weather.error);
   const newsData = useSelector((state: any) => state.news.news);
-  const newsError = useSelector((state: any) => state.news.error);
+  const {newsError, error} = useSelector((state: any) => state.news);
+  const {newsCategories, temperatureUnit} = useSelector(
+    (state: any) => state.settings,
+  );
 
   const getCurrentLocation = async () => {
     const hasPermission = await requestLocationPermission();
@@ -64,6 +68,12 @@ export const Dashboard = () => {
       },
       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
+  };
+
+  const convertTemp = (kelvin: number, unit: string) => {
+    return unit === 'metric'
+      ? Math.round(kelvin - 273.15)
+      : Math.round(((kelvin - 273.15) * 9) / 5 + 32);
   };
 
   const requestLocationPermission = async () => {
@@ -115,27 +125,12 @@ export const Dashboard = () => {
     }
   };
 
-  // Weather-based news filter:
-  const filterNewsCategoryByTemp = (tempK: number) => {
-    const tempC = tempK - 273.15;
-
-    if (tempC <= 10) {
-      return 'health'; // depressing news (closest match)
-    } else if (tempC >= 25) {
-      return 'science'; // fear related
-    } else {
-      return 'sports'; // winning/happiness
-    }
-  };
-
   // When weatherData updates, fetch news accordingly
   useEffect(() => {
-    if (weatherData) {
-      const currentTemp = weatherData.list[0].main.temp;
-      const category = filterNewsCategoryByTemp(currentTemp);
-      fetchNewsByCategory(category);
+    if (newsCategories) {
+      fetchNewsByCategory(newsCategories);
     }
-  }, [weatherData]);
+  }, [newsCategories]);
 
   const getDayLabel = (index: number) => {
     if (index === 0) return 'Today';
@@ -165,11 +160,13 @@ export const Dashboard = () => {
             <Text style={styles.city}>{weatherData.city.name}</Text>
             <View style={styles.row}>
               <Text style={styles.temp}>
-                {Math.round(currentWeather.main.temp - 273.15)}
+                {convertTemp(currentWeather.main.temp, temperatureUnit)}
               </Text>
               <View style={styles.width} />
               <View style={styles.top}>
-                <Text style={styles.weatherText}>°C</Text>
+                <Text style={styles.weatherText}>
+                  {temperatureUnit === 'metric' ? '°C' : '°F'}
+                </Text>
                 <Text style={styles.weatherText}>
                   {currentWeather.weather[0].description}
                 </Text>
@@ -207,8 +204,10 @@ export const Dashboard = () => {
                       {getDayLabel(index)}: {item.weather[0].description}
                     </Text>
                     <Text style={styles.forecastText}>
-                      {Math.round(item.main.temp_max - 273.15)}°C /{' '}
-                      {Math.round(item.main.temp_min - 273.15)} °C
+                      {convertTemp(item.main.temp_max, temperatureUnit)}°
+                      {temperatureUnit === 'metric' ? 'C' : 'F'} /
+                      {convertTemp(item.main.temp_min, temperatureUnit)}°
+                      {temperatureUnit === 'metric' ? 'C' : 'F'}
                     </Text>
                   </View>
                   <Image
@@ -227,31 +226,6 @@ export const Dashboard = () => {
     } else {
       return <Text>No weather data available</Text>;
     }
-  };
-
-  const renderNews = () => {
-    if (newsLoading) return <ActivityIndicator size="small" color="#000" />;
-    if (newsError) return <Text style={styles.error}>{newsError}</Text>;
-    if (!newsData || !newsData.articles?.length)
-      return <Text>No news available</Text>;
-
-    return (
-      <>
-        <Text style={[styles.forecastTitle, {marginTop: 20}]}>
-          News Headlines
-        </Text>
-        <FlatList
-          data={newsData.articles}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({item}) => (
-            <View style={styles.newsCard}>
-              <Text style={styles.newsTitle}>{item.title}</Text>
-              <Text style={styles.newsDescription}>{item.description}</Text>
-            </View>
-          )}
-        />
-      </>
-    );
   };
 
   return (
@@ -273,6 +247,9 @@ export const Dashboard = () => {
           onPress={getCurrentLocation}
           style={styles.searchIcon}>
           <Icon6 name="location-dot" size={20} color="#ccc" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+          <Icon name="cog" size={24} color="#ccc" />
         </TouchableOpacity>
       </View>
 
