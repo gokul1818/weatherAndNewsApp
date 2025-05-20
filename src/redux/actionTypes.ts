@@ -1,0 +1,7 @@
+export const SET_WEATHER = 'SET_WEATHER';
+export const SET_ERROR = 'SET_ERROR';
+export const SET_NEWS = 'SET_NEWS';
+export const SET_NEWS_ERROR = 'SET_NEWS_ERROR';
+export const SET_TEMPERATURE_UNIT = 'SET_TEMPERATURE_UNIT';  
+export const SET_NEWS_CATEGORIES = 'SET_NEWS_CATEGORIES'; 
+
